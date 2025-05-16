@@ -9,9 +9,12 @@ import (
 
 	"github.com/donejeh/go-elastic-search/elastic"
 	"github.com/donejeh/go-elastic-search/embedding"
+	"github.com/donejeh/go-elastic-search/metrics"
 )
 
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
+	metrics.SearchCounter.Inc()
+
 	query := r.URL.Query().Get("q")
 	if query == "" {
 		http.Error(w, "Query parameter 'q' is required", http.StatusBadRequest)

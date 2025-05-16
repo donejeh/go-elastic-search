@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Pink Rose",
+        "description": "Elegant pink rose, ideal for romantic gifts",
+        "tags": ["flower", "romantic", "rose"],
+        "popularity": 87
+    },
+    {
+        "name": "Sunflower",
+        "description": "Bright yellow sunflower that brings joy",
+        "tags": ["flower", "yellow", "sunshine"],
+        "popularity": 74
+    },
+    {
+        "name": "Summer Hat",
+        "description": "A lightweight straw hat perfect for summer days",
+        "tags": ["hat", "summer", "fashion"],
+        "popularity": 95
+    },
+    {
+        "name": "Winter Hat",
+        "description": "Warm and cozy hat for cold weather",
+        "tags": ["hat", "winter", "fashion"],
+        "popularity": 60
+    }
+]

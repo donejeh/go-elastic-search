@@ -47,7 +47,7 @@ func BulkInsertProducts() {
 
 	for _, doc := range products {
 		text := doc["name"].(string) + " " + doc["description"].(string)
-		doc["embedding"] = embedding.GetEmbedding(text)
+		doc["embedding"], err = embedding.GetEmbedding(text)
 
 		docJSON, err := json.Marshal(doc)
 		if err != nil {

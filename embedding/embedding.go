@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -12,7 +12,7 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
-func GetEmbedding(text string) []float32 {
+func GetEmbedding(text string) ([]float32, error) {
 	_ = godotenv.Load(".env")
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 
@@ -24,10 +24,14 @@ func GetEmbedding(text string) []float32 {
 		},
 	)
 	if err != nil {
-		log.Fatalf("embedding error: %v", err)
+		return nil, err
 	}
 
-	return resp.Data[0].Embedding
+	if len(resp.Data) == 0 {
+		return nil, fmt.Errorf("no embedding returned")
+	}
+
+	return resp.Data[0].Embedding, nil
 }
 
 func GetEmbeddingV2(query string) []float32 {

@@ -28,6 +28,7 @@ go.mod               # Go module file
 go.sum               # Go module checksums
 main.go              # Main application entry point
 README.md            # This file
+Dockerfile           # Docker configuration for building and running the application
 ```
 
 ## Prerequisites
@@ -35,6 +36,46 @@ README.md            # This file
 - Go (version 1.24.1 or higher recommended, as per `go.mod`)
 - Elasticsearch (running on `http://localhost:9200`)
 - An OpenAI API Key
+
+## Running the Application
+
+### Locally
+
+1.  **Set up Environment Variables**:
+    Ensure you have an `OPENAI_API_KEY` environment variable set. You can create a `.env` file in the project root by copying `.env.example` and editing it:
+    ```bash
+    cp .env.example .env
+    # Then, edit .env to add your OPENAI_API_KEY
+    # Example .env content:
+    # OPENAI_API_KEY="your_actual_openai_api_key"
+    ```
+    The application loads this at startup.
+    Also, ensure Elasticsearch is running and accessible (default: `http://localhost:9200`).
+
+2.  **Run the application**:
+    ```bash
+    go run main.go
+    ```
+    The server will start, typically on port 8080 (as defined in `main.go` and exposed in `Dockerfile`).
+
+### Using Docker
+
+1.  **Build the Docker image**:
+    From the project root directory:
+    ```bash
+    docker build -t go-elastic-search .
+    ```
+
+2.  **Run the Docker container**:
+    Replace `"your_actual_openai_api_key"` with your actual OpenAI API key.
+    ```bash
+    docker run -p 8080:8080 -e OPENAI_API_KEY="your_actual_openai_api_key" go-elastic-search
+    ```
+    This command:
+    - Runs the container (by default in the foreground, add `-d` for detached mode).
+    - Maps port 8080 of the container to port 8080 on your host machine.
+    - Passes the `OPENAI_API_KEY` as an environment variable to the application running inside the container.
+    The application inside the container will attempt to connect to Elasticsearch. If Elasticsearch is running on your host machine, you might need to use `host.docker.internal:9200` (on Docker Desktop for Mac/Windows) or your host's IP address as the Elasticsearch address for the application. By default, the application uses `http://localhost:9200`.
 
 ## Setup
 
@@ -123,3 +164,4 @@ The API will return a JSON response containing the search results from Elasticse
 -   `api/handler.go`: Contains the `SearchHandler` function which processes search requests, interacts with the embedding service and Elasticsearch, and handles fallback logic.
 -   `embedding/embedding.go`: Responsible for generating text embeddings using the OpenAI API.
 -   `go.mod`: Defines the project's module and its dependencies.
+-   `Dockerfile`: Contains instructions to build and run the application in a Docker container.

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/donejeh/go-elastic-search/elastic"
+	"github.com/donejeh/go-elastic-search/embedding"
 )
 
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
@@ -19,32 +20,35 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	filterTag := r.URL.Query().Get("tag")
 	sortBy := r.URL.Query().Get("sort")
 
-	// Construct the search query
+	// Get embedding vector from OpenAI
+	embeddingVec := embedding.GetEmbedding(query)
+
+	// Build base semantic search body
 	searchBody := map[string]interface{}{
-		"query": map[string]interface{}{
-			"bool": map[string]interface{}{
-				"must": map[string]interface{}{
-					"multi_match": map[string]interface{}{
-						"query":  query,
-						"fields": []string{"name", "description", "tags"},
-					},
-				},
-				"filter": []interface{}{},
-			},
+		"knn": map[string]interface{}{
+			"field":          "embedding",
+			"query_vector":   embeddingVec,
+			"k":              10,
+			"num_candidates": 100,
 		},
 	}
 
+	// Optional filter
 	if filterTag != "" {
-		searchBody["query"].(map[string]interface{})["bool"].(map[string]interface{})["filter"] = append(
-			searchBody["query"].(map[string]interface{})["bool"].(map[string]interface{})["filter"].([]interface{}),
-			map[string]interface{}{
-				"term": map[string]interface{}{
-					"tags.keyword": filterTag,
+		searchBody["query"] = map[string]interface{}{
+			"bool": map[string]interface{}{
+				"filter": []interface{}{
+					map[string]interface{}{
+						"term": map[string]interface{}{
+							"tags.keyword": filterTag,
+						},
+					},
 				},
 			},
-		)
+		}
 	}
 
+	// Optional sorting
 	if sortBy == "popularity" {
 		searchBody["sort"] = []interface{}{
 			map[string]interface{}{
@@ -53,12 +57,14 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Encode search body
 	var b strings.Builder
 	if err := json.NewEncoder(&b).Encode(searchBody); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Execute search
 	res, err := elastic.ES.Search(
 		elastic.ES.Search.WithContext(context.Background()),
 		elastic.ES.Search.WithIndex("products"),
@@ -71,12 +77,14 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer res.Body.Close()
 
+	// Decode response
 	var rBody map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&rBody); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Return JSON response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(rBody)
 }

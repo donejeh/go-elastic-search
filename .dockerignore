@@ -1,0 +1,11 @@
+# Binaries
+app
+*.exe
+*.out
+
+# Local modules
+vendor/
+
+# IDEs
+.vscode/
+.idea/

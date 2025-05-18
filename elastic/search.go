@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+
+	"github.com/donejeh/go-elastic-search/metrics"
 )
 
 func SearchProducts(query string) ([]map[string]interface{}, error) {
+	metrics.SearchCounter.Inc()
+
 	searchQuery := map[string]interface{}{
 		"query": map[string]interface{}{
 			"multi_match": map[string]interface{}{

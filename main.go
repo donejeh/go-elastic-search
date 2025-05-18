@@ -21,7 +21,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/search", api.SearchHandler).Methods("GET")
-	http.Handle("/metrics", promhttp.Handler())
+	r.Handle("/metrics", promhttp.Handler())
 
 	log.Println("Server running at :8080")
 	http.ListenAndServe(":8080", r)
